@@ -2,10 +2,20 @@
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function Dashboard() {
   const { data: sessionData, status } = useSession();
   const router = useRouter();
+
+
+  useEffect(() => {
+  if (!sessionData) {
+    router.push('/login');
+   
+  }
+  }, [sessionData, router]);
+
 
   if (status === 'loading') {
     return (
@@ -19,11 +29,6 @@ export default function Dashboard() {
         <div className="spinner"></div>
       </div>
     );
-  }
-
-  if (!sessionData) {
-    router.push('/login');
-    return null;
   }
 
   return (
@@ -40,7 +45,7 @@ export default function Dashboard() {
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ color: '#a3a3a3', fontSize: '14px' }}>
-              {sessionData.user?.email}
+              {sessionData?.user?.email}
             </span>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
