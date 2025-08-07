@@ -128,14 +128,14 @@ export default function Dashboard() {
               color: '#e5e5e5',
               marginBottom: '12px'
             }}>
-              Customer Database
+              Consumer Database
             </h2>
             <p style={{ 
               color: '#a3a3a3', 
               marginBottom: '20px',
               lineHeight: '1.5'
             }}>
-              Manage customer accounts and their license assignments.
+              Manage consumer accounts and their license assignments.
             </p>
             <Link
               href="/consumers"
@@ -145,7 +145,7 @@ export default function Dashboard() {
                 textDecoration: 'none'
               }}
             >
-              Manage Customers
+              Manage Consumers
             </Link>
           </div>
           

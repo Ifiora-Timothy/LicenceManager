@@ -90,7 +90,7 @@ export default function Consumers() {
   };
 
   return (
-    <PageWrapper title="Customer Management">
+    <PageWrapper title="Consumer Management">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
         
         {/* Create Consumer Form */}
@@ -101,7 +101,7 @@ export default function Consumers() {
             color: '#e5e5e5',
             marginBottom: '20px'
           }}>
-            Create New Customer
+            Create New Consumer
           </h2>
           
           {error && (
@@ -128,13 +128,13 @@ export default function Consumers() {
                   fontSize: '14px',
                   fontWeight: '500'
                 }}>
-                  Customer Name *
+                  Consumer Name *
                 </label>
                 <input
                   id="name"
                   name="name"
                   type="text"
-                  placeholder="Enter customer name"
+                  placeholder="Enter consumer name"
                   required
                   style={{ width: '100%' }}
                 />
@@ -229,7 +229,7 @@ export default function Consumers() {
                 cursor: isSubmitting ? 'not-allowed' : 'pointer'
               }}
             >
-              {isSubmitting ? 'Creating...' : 'Create Customer'}
+              {isSubmitting ? 'Creating...' : 'Create Consumer'}
             </button>
           </form>
         </div>
@@ -242,12 +242,12 @@ export default function Consumers() {
             color: '#e5e5e5',
             marginBottom: '20px'
           }}>
-            All Customers
+            All Consumers
           </h2>
           
           {consumers.length === 0 ? (
             <p style={{ color: '#a3a3a3' }}>
-              No customers found.
+              No consumers found.
             </p>
           ) : (
             <div style={{ overflowX: 'auto' }}>

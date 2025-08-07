@@ -234,7 +234,7 @@ export default function Licenses() {
                 fontSize: '14px',
                 fontWeight: '500'
               }}>
-                Customer
+                Consumer
               </label>
               <select
                 id="consumerId"
@@ -243,7 +243,7 @@ export default function Licenses() {
                 style={{ width: '100%' }}
               >
                 <option value="" disabled>
-                  {consumers.length ? "Select a customer" : "Loading customers..."}
+                  {consumers.length ? "Select a consumer" : "Loading consumers..."}
                 </option>
                 {consumers.map((consumer) => (
                   <option key={consumer._id} value={consumer._id}>
@@ -328,7 +328,7 @@ export default function Licenses() {
                   <tr>
                     <th>License Key</th>
                     <th>Product</th>
-                    <th>Customer</th>
+                    <th>Consumer</th>
                     <th>Type</th>
                     <th>Status</th>
                     <th>Actions</th>

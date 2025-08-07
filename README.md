@@ -5,7 +5,7 @@ A comprehensive license management system built with Next.js for managing softwa
 ## Features
 
 - **License Management**: Create, activate, deactivate, and upgrade software licenses
-- **Consumer Management**: Manage customers and their account information
+- **Consumer Management**: Manage consumers and their account information
 - **Product Management**: Handle multiple software products
 - **MQL5/MQL4 API**: Dedicated API endpoints for MetaTrader Expert Advisors and indicators
 - **Authentication**: Secure admin authentication with NextAuth
