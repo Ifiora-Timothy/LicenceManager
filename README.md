@@ -1,24 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# License Manager
 
-## Getting Started
+A comprehensive license management system built with Next.js for managing software licenses, particularly designed for MQL5/MQL4 trading applications.
 
-First, run the development server:
+## Features
+
+- **License Management**: Create, activate, deactivate, and upgrade software licenses
+- **Consumer Management**: Manage customers and their account information
+- **Product Management**: Handle multiple software products
+- **MQL5/MQL4 API**: Dedicated API endpoints for MetaTrader Expert Advisors and indicators
+- **Authentication**: Secure admin authentication with NextAuth
+- **Database**: MongoDB integration for data persistence
+
+## API for MQL5/MQL4 Clients
+
+The system provides a dedicated API endpoint for license verification from trading applications:
+
+**Endpoint**: `POST /api/check_license`
+
+This endpoint validates license keys, product names, and account numbers for MetaTrader applications. See [API Documentation](docs/API_DOCUMENTATION.md) for detailed implementation instructions.
+
+## Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd LicenceManager
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Configuration**
+   ```bash
+   cp .env.local.example .env.local
+   ```
+   Edit `.env.local` and configure your environment variables:
+   - `MONGODB_URI`: Your MongoDB connection string
+   - `NEXTAUTH_SECRET`: Secret key for NextAuth
+   - `API_SECRET`: Secret key for MQL5/MQL4 API authentication
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the application**
+   Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Testing the API
+
+Test the MQL5/MQL4 license verification API:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+node test-license-api.js
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── (auth)/          # Authentication pages
+│   ├── api/             # API routes
+│   │   ├── check_license/  # MQL5/MQL4 license verification
+│   │   ├── licenses/    # License management
+│   │   ├── products/    # Product management
+│   │   └── consumers/   # Consumer management
+│   ├── licenses/        # License management UI
+│   ├── products/        # Product management UI
+│   └── consumers/       # Consumer management UI
+├── components/          # Reusable UI components
+├── lib/                # Utility libraries
+├── models/             # Database models
+└── types/              # TypeScript type definitions
+```
 
 ## Learn More
 
