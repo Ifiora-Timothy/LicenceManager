@@ -1,45 +1,45 @@
-import { MongoClient } from 'mongodb';
-import mongoose from 'mongoose';
-
-const uri = process.env.MONGODB_URI;
-
-if (!uri) {
-  throw new Error('Please add your MongoDB URI to .env.local');
+import mongoose from "mongoose";
+declare global {
+  var mongoose: any; // This must be a `var` and not a `let / const`
 }
 
-// MongoDB native client (for direct operations if needed)
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
+const MONGODB_URI = process.env.MONGODB_URI!;
 
-if (process.env.NODE_ENV === 'development') {
-  if (!(global as any)._mongoClientPromise) {
-    client = new MongoClient(uri);
-    (global as any)._mongoClientPromise = client.connect();
-  }
-  clientPromise = (global as any)._mongoClientPromise;
-} else {
-  client = new MongoClient(uri);
-  clientPromise = client.connect();
+if (!MONGODB_URI) {
+  throw new Error(
+    "Please define the MONGODB_URI environment variable inside .env.local"
+  );
 }
 
-// Mongoose connection (for model operations)
-const connectToMongoose = async () => {
-  if (mongoose.connection.readyState >= 1) {
-    return mongoose.connection;
-  }
+let cached = global.mongoose;
 
-  try {
-    await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-      socketTimeoutMS: 10000, // Close sockets after 10s of inactivity
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectToMongoose() {
+  if (cached.conn) {
+    return cached.conn;
+  }
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+    
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      return mongoose;
     });
-    console.log('Connected to MongoDB via Mongoose');
-    return mongoose.connection;
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    throw error;
   }
-};
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
 
-export default clientPromise;
+    throw e;
+  }
+
+  return cached.conn;
+}
+
+export default connectToMongoose;
 export { connectToMongoose };
