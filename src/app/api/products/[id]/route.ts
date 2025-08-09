@@ -5,11 +5,11 @@ import LicenseModel from '@/models/License';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } 
 ) {
   try {
     await connectToMongoose();
-    const { id } = params;
+    const { id } = await params;
 
     // Check if product exists
     const product = await ProductModel.findById(id);
