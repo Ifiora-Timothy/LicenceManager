@@ -1,15 +1,26 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { LocalStorageManager } from '@/lib/localStorage';
 
 export default function Login() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
+
+  // Load remembered email on component mount
+  useEffect(() => {
+    const rememberedEmail = LocalStorageManager.getRememberedEmail();
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +45,13 @@ export default function Login() {
         
         setError(errorMessage);
       } else if (result?.ok) {
+        // Handle "Remember Me" functionality
+        if (rememberMe) {
+          LocalStorageManager.rememberLoginEmail(email);
+        } else {
+          LocalStorageManager.clearRememberedEmail();
+        }
+        
         router.push('/');
       } else {
         setError('An unexpected error occurred. Please try again.');
@@ -116,6 +134,32 @@ export default function Login() {
                 placeholder="Enter your password"
                 style={{ width: '100%' }}
               />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={{ 
+                  width: '16px', 
+                  height: '16px',
+                  accentColor: '#3b82f6'
+                }}
+              />
+              <label 
+                htmlFor="remember-me" 
+                style={{ 
+                  color: '#e5e5e5',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  userSelect: 'none'
+                }}
+              >
+                Remember my email
+              </label>
             </div>
 
             {error && (

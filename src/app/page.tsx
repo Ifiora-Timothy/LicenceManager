@@ -1,20 +1,29 @@
 "use client";
-import { useSession, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { useEnhancedSession } from '@/hooks/useEnhancedSession';
+import { useActivityTracker } from '@/hooks/useActivityTracker';
+import SessionInfo from '@/components/SessionInfo';
 
 export default function Dashboard() {
-  const { data: sessionData, status } = useSession();
+  const { 
+    session: sessionData, 
+    status, 
+    sessionMetadata, 
+    clearStoredData 
+  } = useEnhancedSession();
   const router = useRouter();
 
+  // Track user activity
+  useActivityTracker();
 
   useEffect(() => {
-  if (!sessionData) {
-    router.push('/login');
-   
-  }
-  }, [sessionData, router]);
+    if (status !== 'loading' && !sessionData) {
+      router.push('/login');
+    }
+  }, [sessionData, status, router]);
 
 
   if (status === 'loading') {
@@ -46,9 +55,17 @@ export default function Dashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ color: '#a3a3a3', fontSize: '14px' }}>
               {sessionData?.user?.email}
+              {sessionMetadata?.loginTime && (
+                <div style={{ fontSize: '12px', marginTop: '2px' }}>
+                  Logged in: {sessionMetadata.loginTime.toLocaleTimeString()}
+                </div>
+              )}
             </span>
             <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
+              onClick={() => {
+                clearStoredData(); // Clear localStorage before signing out
+                signOut({ callbackUrl: '/login' });
+              }}
               className="btn btn-danger"
               style={{ fontSize: '14px' }}
             >
@@ -178,6 +195,8 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+      
+      <SessionInfo />
     </div>
   );
 }
