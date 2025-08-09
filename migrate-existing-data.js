@@ -3,7 +3,7 @@
 
 const { MongoClient } = require('mongodb');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://timothy:test1234@atlascluster.oxmvie0.mongodb.net/license_db';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 console.log("url, ",MONGODB_URI)
 async function migrateData() {
