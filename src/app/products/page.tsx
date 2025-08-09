@@ -9,6 +9,7 @@ export default function Products() {
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -46,6 +47,33 @@ export default function Products() {
       setError((err as Error).message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (productId: string) => {
+    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingId(productId);
+    setError(null);
+    
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to delete product');
+      }
+      
+      // Refresh the products list
+      fetchProducts();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -160,6 +188,7 @@ export default function Products() {
                     <th>Name</th>
                     <th>Description</th>
                     <th>Created</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -169,6 +198,62 @@ export default function Products() {
                       <td style={{ color: '#a3a3a3' }}>{product.description || 'No description'}</td>
                       <td style={{ fontSize: '13px', color: '#737373' }}>
                         {new Date(product.createdAt || '').toLocaleDateString()}
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => handleDelete(product._id!)}
+                          disabled={deletingId === product._id}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#ef4444',
+                            cursor: deletingId === product._id ? 'not-allowed' : 'pointer',
+                            padding: '8px',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s ease',
+                            opacity: deletingId === product._id ? 0.5 : 1,
+                          }}
+                          onMouseEnter={(e) => {
+                            if (deletingId !== product._id) {
+                              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                          title="Delete product"
+                        >
+                          {deletingId === product._id ? (
+                            <div style={{
+                              width: '16px',
+                              height: '16px',
+                              border: '2px solid #ef4444',
+                              borderTop: '2px solid transparent',
+                              borderRadius: '50%',
+                              animation: 'spin 1s linear infinite'
+                            }} />
+                          ) : (
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M3 6h18" />
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                              <line x1="10" y1="11" x2="10" y2="17" />
+                              <line x1="14" y1="11" x2="14" y2="17" />
+                            </svg>
+                          )}
+                        </button>
                       </td>
                     </tr>
                   ))}
