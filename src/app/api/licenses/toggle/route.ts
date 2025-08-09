@@ -6,7 +6,7 @@ import License from '@/models/License';
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -20,9 +20,14 @@ export async function POST(request: NextRequest) {
 
     await connectToMongoose();
     
-    const license = await License.findById(licenseId);
+    // Only toggle licenses created by the current user
+    const license = await License.findOne({ 
+      _id: licenseId, 
+      createdBy: (session.user as any).id 
+    });
+    
     if (!license) {
-      return NextResponse.json({ error: 'License not found' }, { status: 404 });
+      return NextResponse.json({ error: 'License not found or access denied' }, { status: 404 });
     }
 
     license.active = active;

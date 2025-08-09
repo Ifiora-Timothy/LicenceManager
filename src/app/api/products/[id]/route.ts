@@ -1,27 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import { connectToMongoose } from '@/lib/mongodb';
 import ProductModel from '@/models/Product';
 import LicenseModel from '@/models/License';
+import { authOptions } from '@/lib/auth';
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> } 
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     await connectToMongoose();
     const { id } = await params;
 
-    // Check if product exists
-    const product = await ProductModel.findById(id);
+    // Check if product exists and belongs to the current user
+    const product = await ProductModel.findOne({ 
+      _id: id, 
+      createdBy: (session.user as any).id 
+    });
+    
     if (!product) {
       return NextResponse.json(
-        { error: 'Product not found' },
+        { error: 'Product not found or you do not have permission to delete it' },
         { status: 404 }
       );
     }
 
-    // Check if there are any licenses associated with this product
-    const associatedLicenses = await LicenseModel.find({ productId: id });
+    // Check if there are any licenses associated with this product (created by this user)
+    const associatedLicenses = await LicenseModel.find({ 
+      productId: id,
+      createdBy: (session.user as any).id 
+    });
+    
     if (associatedLicenses.length > 0) {
       return NextResponse.json(
         { 

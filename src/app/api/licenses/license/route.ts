@@ -11,7 +11,7 @@ import { License as ILicence} from '@/types';
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -35,14 +35,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid consumerId' }, { status: 400 });
     }
 
-    const product = await Product.findById(productId);
+    // Ensure the product belongs to the current user
+    const product = await Product.findOne({ 
+      _id: productId, 
+      createdBy: (session.user as any).id 
+    });
     if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Product not found or access denied' }, { status: 404 });
     }
 
-    const consumer = await Consumer.findById(consumerId);
+    // Ensure the consumer belongs to the current user
+    const consumer = await Consumer.findOne({ 
+      _id: consumerId, 
+      createdBy: (session.user as any).id 
+    });
     if (!consumer) {
-      return NextResponse.json({ error: 'Consumer not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Consumer not found or access denied' }, { status: 404 });
     }
 
     const license = new License({
@@ -51,6 +59,7 @@ export async function POST(request: NextRequest) {
       consumerId,
       licenseType,
       expires: expires ? new Date(expires) : null,
+      createdBy: (session.user as any).id,
     });
 
     await license.save();
@@ -64,7 +73,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session) {
+  if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
@@ -76,9 +85,14 @@ export async function DELETE(request: NextRequest) {
     
     await connectToMongoose();
     
-    const deleted = await License.findByIdAndDelete(licenseId);
+    // Only delete licenses created by the current user
+    const deleted = await License.findOneAndDelete({ 
+      _id: licenseId, 
+      createdBy: (session.user as any).id 
+    });
+    
     if (!deleted) {
-      return NextResponse.json({ error: 'License not found' }, { status: 404 });
+      return NextResponse.json({ error: 'License not found or access denied' }, { status: 404 });
     }
     
     return NextResponse.json({ message: 'License deleted successfully' }, { status: 200 });

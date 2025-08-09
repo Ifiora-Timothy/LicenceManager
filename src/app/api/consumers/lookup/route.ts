@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
 import { connectToMongoose } from '@/lib/mongodb';
 import Consumer from '@/models/Consumer';
 import License from '@/models/License';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { email, accountNumber } = await request.json();
 
     if (!email && !accountNumber) {
@@ -13,8 +20,8 @@ export async function POST(request: NextRequest) {
 
     await connectToMongoose();
 
-    // Find consumer by email or account number
-    const query: any = {};
+    // Find consumer by email or account number, but only for the current user
+    const query: any = { createdBy: (session.user as any).id };
     if (email) query.email = email;
     if (accountNumber) query.accountNumber = accountNumber;
 
@@ -23,8 +30,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Consumer not found' }, { status: 404 });
     }
 
-    // Get all licenses for this consumer
-    const licenses = await License.find({ consumerId: consumer._id })
+    // Get all licenses for this consumer (only those created by the current user)
+    const licenses = await License.find({ 
+      consumerId: consumer._id,
+      createdBy: (session.user as any).id 
+    })
       .populate('productId', 'name description')
       .populate('consumerId', 'name email accountNumber')
       .sort({ createdAt: -1 });

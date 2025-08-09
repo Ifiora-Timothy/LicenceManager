@@ -11,7 +11,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -24,11 +24,16 @@ export async function DELETE(
 
     await connectToMongoose();
 
-    // Find and delete the consumer
-    const deletedConsumer = await Consumer.findByIdAndDelete(id);
+    // Find and delete the consumer only if it belongs to the current user
+    const deletedConsumer = await Consumer.findOneAndDelete({
+      _id: id,
+      createdBy: (session.user as any).id
+    });
 
     if (!deletedConsumer) {
-      return NextResponse.json({ error: 'Consumer not found' }, { status: 404 });
+      return NextResponse.json({ 
+        error: 'Consumer not found or you do not have permission to delete it' 
+      }, { status: 404 });
     }
 
     return NextResponse.json({ 
@@ -52,11 +57,11 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } =await  params;
+    const { id } = await params;
 
     // Validate if the id is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -65,10 +70,16 @@ export async function GET(
 
     await connectToMongoose();
 
-    const consumer = await Consumer.findById(id);
+    // Find consumer only if it belongs to the current user
+    const consumer = await Consumer.findOne({
+      _id: id,
+      createdBy: (session.user as any).id
+    });
 
     if (!consumer) {
-      return NextResponse.json({ error: 'Consumer not found' }, { status: 404 });
+      return NextResponse.json({ 
+        error: 'Consumer not found or you do not have permission to access it' 
+      }, { status: 404 });
     }
 
     return NextResponse.json(consumer);

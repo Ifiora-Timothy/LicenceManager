@@ -5,6 +5,7 @@ export interface Consumer {
   phone?: string;
   country?: string;
   accountNumber: string;
+  createdBy: string; // User ID who created this consumer
   createdAt?: string;
   updatedAt?: string;
 }
@@ -17,6 +18,7 @@ export interface License {
   licenseType: 'full' | 'trial';
   expires?: string | null;
   active: boolean;
+  createdBy: string; // User ID who created this license
   createdAt?: string;
 }
 
@@ -24,6 +26,7 @@ export interface Product {
   _id?: string;
   name: string;
   description?: string;
+  createdBy: string; // User ID who created this product
   createdAt?: string;
 }
 
